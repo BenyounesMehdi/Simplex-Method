@@ -88,18 +88,20 @@ void fillxArray()
 void fillTable(vector<vector<float>> &table, vector<float> t, vector<float> bi, vector<float> Zequation)
 {
     float temp;
-    table.resize(constainsNumber + 1, vector<float>(variablesNumber + 1));  // Resize the table
+    constainsNumber = constainsNumber + 1 ;
+    variablesNumber = variablesNumber + 1 ;
+    table.resize(constainsNumber, vector<float>(variablesNumber));  // Resize the table
     int i, j;
 
     cout << endl;
 
-    for (i = 0; i < constainsNumber + 1; i++)
+    for (i = 0; i < constainsNumber; i++)
     {
 
-        for (j = 0; j < variablesNumber + 1; j++)
+        for (j = 0; j < variablesNumber; j++)
         {
 
-            if (j == variablesNumber)
+            if (j == variablesNumber-1)
             {
 
                 temp = bi.back();
@@ -107,7 +109,7 @@ void fillTable(vector<vector<float>> &table, vector<float> t, vector<float> bi, 
                 table[i][j] = temp;
             }
 
-            else if (i == constainsNumber)
+            else if (i == constainsNumber-1)
             {
                 temp = Zequation.back();
                 Zequation.pop_back();
@@ -123,7 +125,7 @@ void fillTable(vector<vector<float>> &table, vector<float> t, vector<float> bi, 
         }
         cout << endl;
     }
-    table[constainsNumber][variablesNumber] = 0;
+    table[constainsNumber-1][variablesNumber-1] = 0;
 }
 
 void displayTable(vector<string> xArray, vector<string> eArray, vector<vector<float>> &table)
@@ -137,10 +139,10 @@ void displayTable(vector<string> xArray, vector<string> eArray, vector<vector<fl
 
     cout << endl;
 
-    for (i = 0; i < constainsNumber + 1; i++)
+    for (i = 0; i < constainsNumber ; i++)
     {
 
-        for (j = 0; j < variablesNumber + 1; j++)
+        for (j = 0; j < variablesNumber ; j++)
         {
             if (j == 0)
             {
@@ -174,8 +176,8 @@ int getPivotLin (vector<float> Zequation, vector<float> BIcoefficients, vector<v
     float temp, min ;
     int linIndex ;
     int index = getPivotCol(Zequation) ;
-    for( int i = 0 ; i < constainsNumber ; i++ ) {
-         temp  = table[i][variablesNumber] / table[i][index] ;
+    for( int i = 0 ; i < constainsNumber-1 ; i++ ) {
+         temp  = table[i][variablesNumber-1] / table[i][index] ;
          //cout << table[i][index]  << " ";
          
         divsion.push_back(temp) ;
@@ -205,8 +207,8 @@ void calculateNewTable(vector<vector<float>> &table) {
     int colIndex = getPivotCol(Zequation) ;
     int linIndex = getPivotLin(Zequation, BIcoefficients, table) ; 
 
-    for( i = 0 ; i < constainsNumber+1 ; i++ ) {
-        for( j = 0 ; j < variablesNumber+1 ; j++ ) {
+    for( i = 0 ; i < constainsNumber ; i++ ) {
+        for( j = 0 ; j < variablesNumber ; j++ ) {
             temp = table[i][j] - ((table[i][colIndex] * table[linIndex][j]) / table[linIndex][colIndex]) ;
             table[i][j] = temp ;
         }
