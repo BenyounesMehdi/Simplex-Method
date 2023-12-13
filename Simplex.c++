@@ -6,8 +6,10 @@
 
 using namespace std;
 
-int variablesNumber, constainsNumber;
-vector<vector<float>> table;  // Change to 2D vector
+int variablesNumber, constainsNumber, colPivotIndex, linPivotIndex;
+float pivot  ;
+vector<vector<float>> table;
+vector<vector<float>> newTable; 
 vector<float> coefficients;
 vector<float> BIcoefficients;
 vector<float> Zequation;
@@ -24,7 +26,6 @@ void getZequation()
         cin >> temp;
         Zequation.push_back(temp);
     }
-    //reverse(Zequation.begin(), Zequation.end());
 }
 
 void getUserInputs()
@@ -52,14 +53,11 @@ void getUserInputs()
         for( int k = 0 ; k < constainsNumber ; k++ ) {
             if( k == turn ) {
                 temp  = 1 ;
-                
             }
             else {
                 temp = 0 ;
             }
-            
             coefficients.push_back(temp) ;
-            
         }
         turn++ ;
         cout << "\tEnter bi Value : ";
@@ -74,14 +72,6 @@ void getUserInputs()
     for( int g = 0 ; g < constainsNumber ; g++ ) {
         Zequation.push_back(0) ;
     }
-    
-    cout << "Zeeq : " << endl ;
-
-    for( int e = 0 ; e < Zequation.size() ; e++ ) {
-        cout << Zequation[e] << " " ;
-    }
-    
-    //reverse(Zequation.begin(), Zequation.end());
 }
 
 void filleArray()
@@ -91,10 +81,9 @@ void filleArray()
     for (i = 1; i < constainsNumber + 1; i++)
     {
         x = "e" + to_string(i);
-        eArray.push_back(x);  // Change to eArray
+        eArray.push_back(x);  
     }
     eArray.push_back("Z");
-
 }
 
 void fillxArray()
@@ -106,7 +95,6 @@ void fillxArray()
         x = "X" + to_string(i);
         xArray.push_back(x);
     }
-    //int len = eArray.size() ;
 
     for( i = 0 ; i < eArray.size()-1 ; i++ ) {
 
@@ -118,17 +106,10 @@ void fillxArray()
     }
     xArray.push_back("Bi");
 
-    /*for( i = 0 ; i < xArray.size() ; i++ ) {
-        cout << xArray[i] << " " ;
-    }
-
-    for( i = 0 ; i < Zequation.size() ; i++ ) {
-        cout << Zequation[i] << " " ;
-    } */
-
+    reverse(coefficients.begin(), coefficients.end()) ;
+    reverse(coefficients.begin(), coefficients.end()) ;
 
 }
-
 
 
 void fillTable(vector<vector<float>> &table, vector<float> t, vector<float> bi, vector<float> Zequation)
@@ -137,6 +118,7 @@ void fillTable(vector<vector<float>> &table, vector<float> t, vector<float> bi, 
     constainsNumber = constainsNumber + 1 ;
     variablesNumber = variablesNumber + eArray.size()  ;
     reverse(Zequation.begin(), Zequation.end());
+    newTable.resize(constainsNumber, vector<float>(variablesNumber));
     table.resize(constainsNumber, vector<float>(variablesNumber));  // Resize the table
     int i, j;
 
@@ -189,7 +171,6 @@ void displayTable(vector<string> xArray, vector<string> eArray, vector<vector<fl
 
     for (i = 0; i < constainsNumber ; i++)
     {
-
         for (j = 0; j < variablesNumber ; j++)
         {
             if (j == 0)
@@ -226,8 +207,6 @@ int getPivotLin (vector<float> Zequation, vector<float> BIcoefficients, vector<v
     int index = getPivotCol(Zequation) ;
     for( int i = 0 ; i < constainsNumber-1 ; i++ ) {
          temp  = table[i][variablesNumber-1] / table[i][index] ;
-         //cout << table[i][index]  << " ";
-         
         divsion.push_back(temp) ;
     }
 
@@ -245,21 +224,71 @@ int getPivotLin (vector<float> Zequation, vector<float> BIcoefficients, vector<v
 void calculatePivot (vector<float> Zequation) {
     int colIndex = getPivotCol(Zequation) ;
     int linIndex = getPivotLin(Zequation, BIcoefficients, table) ;
+    pivot = table[linIndex][colIndex] ;
     cout << "\nPivot in Linge: " << linIndex+1 << ", Pivot in Column: " << colIndex+1 ;
-    cout << "\nPivot = " << table[linIndex][colIndex] ;
+    cout << "\nPivot = " << pivot ;
 }
 
-void calculateNewTable(vector<vector<float>> &table) {
+bool checkTable() {
+    int i , j ;
+    float maxElement = table[constainsNumber][0] ;
+
+    for( i = 0  ; i < variablesNumber ; i++ ) {
+        if( maxElement < table[constainsNumber][i] ) {
+            maxElement = table[constainsNumber][i] ;
+        }
+    }
+
+    if( maxElement > 0 ) {
+        return true ;
+    }
+    return false ;
+}
+
+void calculateNewTable() {
     int i, j ;
-    float temp ;
-    int colIndex = getPivotCol(Zequation) ;
-    int linIndex = getPivotLin(Zequation, BIcoefficients, table) ; 
+
+      newTable.resize(constainsNumber, vector<float>(variablesNumber, 0));
+
+    colPivotIndex = getPivotCol(Zequation) ;
+    linPivotIndex = getPivotLin(Zequation, BIcoefficients, table) ; 
+    eArray[linPivotIndex] = xArray[colPivotIndex] ;
+    
+    pivot = table[linPivotIndex][colPivotIndex];
 
     for( i = 0 ; i < constainsNumber ; i++ ) {
         for( j = 0 ; j < variablesNumber ; j++ ) {
-            temp = table[i][j] - ((table[i][colIndex] * table[linIndex][j]) / table[linIndex][colIndex]) ;
-            table[i][j] = temp ;
+            if( j == colPivotIndex ) {
+                if( i == linPivotIndex ) {
+                    newTable[i][j] = 1 ;
+                }
+                else {
+                    newTable[i][j] = 0 ;
+                }
+            }
+            else if( i == linPivotIndex ) {
+                newTable[i][j] = table[i][j] / pivot ;
+            }
+            
+            else {
+                newTable[i][j] = (table[i][j] - ((table[i][colPivotIndex] * table[linPivotIndex][j]) / pivot)) ;
+            }
         }
+    }
+
+    for( i = 0 ; i < constainsNumber ; i++ ) {
+        for( j = 0 ; j < variablesNumber ; j++ ) {
+            table[i][j] = newTable[i][j] ;
+        }
+    }
+}
+
+void finishProgramm() {
+    while( !checkTable() ) {
+        calculatePivot(Zequation) ;
+        calculateNewTable() ;
+        cout << endl ;
+        displayTable(xArray, eArray, table); 
     }
 }
 
@@ -269,17 +298,15 @@ int main()
     getUserInputs();
     filleArray();
     fillxArray();
-    reverse(coefficients.begin(), coefficients.end()) ;
-    for( int f = 0 ; f < coefficients.size() ; f++ ) {
-        cout << coefficients[f] << " " ;
-    }
-    reverse(coefficients.begin(), coefficients.end()) ;
+    
     fillTable(table, coefficients, BIcoefficients, Zequation);
     displayTable(xArray, eArray, table);
-   /*calculatePivot(Zequation) ;
-    calculateNewTable(table) ;
     cout << endl ;
-    displayTable(xArray, eArray, table); */
+
+        calculatePivot(Zequation) ;
+        calculateNewTable() ;
+        cout << endl ;
+        displayTable(xArray, eArray, table); 
 
     return 0;
 }
